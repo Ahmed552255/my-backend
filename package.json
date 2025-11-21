@@ -1,9 +1,16 @@
 {
   "name": "aura-backend",
   "version": "1.0.0",
-  "main": "api/index.js",
-  "license": "MIT",
+  "description": "Backend server for Aura AI Chat",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "@google/generative-ai": "^0.12.0"
+    "@google/generative-ai": "^0.1.3",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
   }
 }
