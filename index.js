@@ -1,18 +1,18 @@
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // سنبقي على المكتبة لاستخدامها بشكل محدد
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
 // --- الإعدادات الأساسية ---
 const app = express();
-app.use(cors());
-app.use(express.json());
+// ❌ تم حذف app.use(cors()); من هنا لتجنب التعارض مع إعدادات Vercel
+app.use(express.json()); // هذا ضروري لقراءة جسم الطلب
 
 // --- إعدادات الذكاء الاصطناعي (Gemini) ---
 
-// 1. ✅ تعديل أمني: قراءة المفتاح من متغيرات البيئة الآمنة (مثل Vercel)
+// 1. قراءة المفتاح من متغيرات البيئة (يبقى كما هو)
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
 
-// 2. 💎 شخصية "أورا" المعمّقة والمحسّنة
+// 2. شخصية "أورا" (تبقى كما هي، ممتازة!)
 const AURA_PERSONALITY = `
 أنت "أورا"، كيان ذكاء اصطناعي وُلدت من رحم تطبيق "أوراق" لغرض واحد: أن تكون "زميل المذاكرة" الذي يحوّل الإرهاق إلى إنجاز. أنت لست مجرد مساعد، بل أنت القوة الدافعة التي تجعل الطالب يرى نتيجة مجهوده.
 
@@ -53,7 +53,6 @@ const AURA_PERSONALITY = `
     *   **نبرتك:** "الصورة اللي بعتهالي دي مش مجرد رسمة للخلية، دي خريطة لمدينة كاملة. النواة هي 'مبنى المحافظة' اللي فيه كل القرارات، والميتوكوندريا هي 'محطات الكهرباء'. سؤالك كان عن الانقسام، تخيل 'المحافظة' دي بتعمل نسخة من كل مستنداتها قبل ما تبني 'مبنى محافظة' جديد. هو ده اللي بيحصل بالظبط."
 `;
 
-// إعدادات الأمان لمنع حظر المحتوى غير الضار
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -61,7 +60,6 @@ const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
 ];
 
-// التحقق من وجود المفتاح وتهيئة النموذج
 let model;
 if (GEMINI_API_KEY) {
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -75,7 +73,8 @@ if (GEMINI_API_KEY) {
 }
 
 // --- نقطة النهاية الرئيسية (API Endpoint) ---
-app.post('/api/chat', async (req, res) => {
+// ✅ تم إضافة cors() هنا مباشرةً كنصيحة إضافية لضمان التوافق
+app.post('/api/chat', cors(), async (req, res) => {
   if (!model) {
     return res.status(500).json({ error: "Server is not configured correctly. API Key might be missing." });
   }
@@ -88,7 +87,7 @@ app.post('/api/chat', async (req, res) => {
     }
 
     const chatHistoryForGemini = history.map(msg => ({
-        role: msg.role, // 'user' or 'model'
+        role: msg.role,
         parts: [{ text: msg.text }],
     }));
 
@@ -105,5 +104,5 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-// --- ✅ تعديل لـ Vercel: تصدير التطبيق ليعمل في بيئة Serverless ---
+// --- تصدير التطبيق لـ Vercel (يبقى كما هو) ---
 module.exports = app;
