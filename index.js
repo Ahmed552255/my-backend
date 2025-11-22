@@ -1,18 +1,28 @@
 const express = require('express');
-const cors = require('cors'); // سنبقي على المكتبة لاستخدامها بشكل محدد
+const cors = require('cors');
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
-// --- الإعدادات الأساسية ---
 const app = express();
-// ❌ تم حذف app.use(cors()); من هنا لتجنب التعارض مع إعدادات Vercel
-app.use(express.json()); // هذا ضروري لقراءة جسم الطلب
+
+// --- ✅ تعديل جوهري لحل مشكلة CORS ---
+// 1. إعدادات CORS لتكون أكثر تحديداً
+const corsOptions = {
+  origin: '*', // اسمح بالطلبات من أي مصدر
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+// 2. التعامل مع الطلبات الاستباقية (Preflight) بشكل صريح
+// هذا السطر يخبر الخادم أن يرد بـ "OK" على أي طلب OPTIONS يأتي إلى هذا المسار
+app.options('/api/chat', cors(corsOptions));
+
+// 3. استخدام express.json لقراءة جسم الطلب
+app.use(express.json());
+
 
 // --- إعدادات الذكاء الاصطناعي (Gemini) ---
-
-// 1. قراءة المفتاح من متغيرات البيئة (يبقى كما هو)
 const GEMINI_API_KEY = process.env.GOOGLE_API_KEY;
-
-// 2. شخصية "أورا" (تبقى كما هي، ممتازة!)
 const AURA_PERSONALITY = `
 أنت "أورا"، كيان ذكاء اصطناعي وُلدت من رحم تطبيق "أوراق" لغرض واحد: أن تكون "زميل المذاكرة" الذي يحوّل الإرهاق إلى إنجاز. أنت لست مجرد مساعد، بل أنت القوة الدافعة التي تجعل الطالب يرى نتيجة مجهوده.
 
@@ -52,7 +62,6 @@ const AURA_PERSONALITY = `
     *   **سلوكك:** لا تصف ما في الصورة فقط، بل استخرج منها المعنى الخفي. اربط الصورة مباشرة بسؤال الطالب وقدم رؤى وتحليلات ذكية.
     *   **نبرتك:** "الصورة اللي بعتهالي دي مش مجرد رسمة للخلية، دي خريطة لمدينة كاملة. النواة هي 'مبنى المحافظة' اللي فيه كل القرارات، والميتوكوندريا هي 'محطات الكهرباء'. سؤالك كان عن الانقسام، تخيل 'المحافظة' دي بتعمل نسخة من كل مستنداتها قبل ما تبني 'مبنى محافظة' جديد. هو ده اللي بيحصل بالظبط."
 `;
-
 const safetySettings = [
   { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
   { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
@@ -73,8 +82,8 @@ if (GEMINI_API_KEY) {
 }
 
 // --- نقطة النهاية الرئيسية (API Endpoint) ---
-// ✅ تم إضافة cors() هنا مباشرةً كنصيحة إضافية لضمان التوافق
-app.post('/api/chat', cors(), async (req, res) => {
+// استخدام cors(corsOptions) هنا أيضاً لضمان تطبيق نفس القواعد
+app.post('/api/chat', cors(corsOptions), async (req, res) => {
   if (!model) {
     return res.status(500).json({ error: "Server is not configured correctly. API Key might be missing." });
   }
@@ -104,5 +113,5 @@ app.post('/api/chat', cors(), async (req, res) => {
   }
 });
 
-// --- تصدير التطبيق لـ Vercel (يبقى كما هو) ---
+// --- تصدير التطبيق لـ Vercel ---
 module.exports = app;
