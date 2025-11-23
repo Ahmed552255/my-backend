@@ -1,16 +1,7 @@
 {
-  "name": "aura-backend",
+  "name": "aura-backend-netlify",
   "version": "1.0.0",
-  "description": "Backend server for Aura AI Chat",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js"
-  },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@google/generative-ai": "^0.1.3",
-    "cors": "^2.8.5",
-    "express": "^4.18.2"
+    "@google/generative-ai": "^0.1.3"
   }
 }
