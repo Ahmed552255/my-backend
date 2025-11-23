@@ -2,22 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require('@google/generative-ai');
 
+// --- الإعدادات الأساسية ---
 const app = express();
 
-// --- ✅ تعديل جوهري لحل مشكلة CORS ---
-// 1. إعدادات CORS لتكون أكثر تحديداً
-const corsOptions = {
-  origin: '*', // اسمح بالطلبات من أي مصدر
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-// 2. التعامل مع الطلبات الاستباقية (Preflight) بشكل صريح
-// هذا السطر يخبر الخادم أن يرد بـ "OK" على أي طلب OPTIONS يأتي إلى هذا المسار
-app.options('/api/chat', cors(corsOptions));
-
-// 3. استخدام express.json لقراءة جسم الطلب
+// ✅ **التبسيط الرئيسي:**
+// نستخدم cors() بالشكل الأساسي. هذا يخبر Express بالسماح بالطلبات.
+// ونترك ملف vercel.json يقوم بالعمل الصعب ويفرض القواعد الصحيحة.
+app.use(cors());
 app.use(express.json());
 
 
@@ -82,8 +73,7 @@ if (GEMINI_API_KEY) {
 }
 
 // --- نقطة النهاية الرئيسية (API Endpoint) ---
-// استخدام cors(corsOptions) هنا أيضاً لضمان تطبيق نفس القواعد
-app.post('/api/chat', cors(corsOptions), async (req, res) => {
+app.post('/api/chat', async (req, res) => {
   if (!model) {
     return res.status(500).json({ error: "Server is not configured correctly. API Key might be missing." });
   }
